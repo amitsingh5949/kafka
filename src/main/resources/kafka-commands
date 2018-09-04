@@ -1,0 +1,40 @@
+https://www.youtube.com/watch?v=9XNNbdGNnvo&list=PL0dIPO6wMFLRJbLAN3BK4uHZQKNu5ycFi
+
+# start zookeeper
+
+/usr/local/bin/kafka/bin/zookeeper-server-start.sh /usr/local/bin/kafka/config/zookeeper.properties
+
+
+# to create multiple broker on same node
+Edit config/server3.properties and replace the existing config values as follows:
+
+broker.id=3
+port=9094
+log.dir=/tmp/kafka-logs-3
+
+# start kafka broker
+cd /usr/local/bin/kafka
+/usr/local/bin/kafka/bin/kafka-server-start.sh /usr/local/bin/kafka/config/server-1.properties
+
+
+# create topic
+/usr/local/bin/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --topic replicated_topic --replication-factor 3 --partitions 3
+
+# list topics
+ /usr/local/bin/kafka/bin/kafka-topics.sh --list --zookeeper localhost:2181
+
+# describe topic
+ /usr/local/bin/kafka/bin/kafka-topics.sh --describe --topic replicated_topic --zookeeper localhost:2181
+
+ # create producer
+  /usr/local/bin/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092,localhost:9093,localhost:9094 --topic replicated_topic
+
+   # create consumer
+  /usr/local/bin/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092,localhost:9093,localhost:9094 --topic replicated_topic
+
+  # create performance test producer
+
+/usr/local/bin/kafka/bin/kafka-producer-perf-test.sh --topic replicated_topic --num-records 50 --record-size 1 --throughput 10 --producer-props bootstrap.servers=localhost:9092,localhost:9093 key.serializer=org.apache.kafka.common.serialization.StringSerializer value.serializer=org.apache.kafka.common.serialization.StringSerializer 
+
+
+
